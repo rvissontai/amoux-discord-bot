@@ -3,8 +3,12 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Entidades;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -12,6 +16,8 @@ namespace AmouxBot
 {
     class Program
     {
+        public static IConfigurationRoot configuration;
+
         static void Main(string[] args) => new Program().RunBotAsync().GetAwaiter().GetResult();
 
         private DiscordSocketClient _cliente;
@@ -20,14 +26,18 @@ namespace AmouxBot
 
         public async Task RunBotAsync()
         {
+            var serviceCollection = new ServiceCollection();
+
             _cliente = new DiscordSocketClient();
             _commands = new CommandService();
-            _services = new ServiceCollection().AddSingleton(_cliente).AddSingleton(_commands).BuildServiceProvider();
+            _services = serviceCollection.AddSingleton(_cliente).AddSingleton(_commands).BuildServiceProvider();
+
+            ConfigureServices(serviceCollection);
 
             _cliente.Ready += Cliente_Ready;
             _cliente.Log += Cliente_Log;
 
-            await _cliente.LoginAsync(TokenType.Bot, "NzkyMDUyMDY0OTcxNzg0MjIy.X-YF9w.oE9M_9FtN2VjkeM37nbjb4Y9ITM");
+            await _cliente.LoginAsync(TokenType.Bot, configuration.GetValue<string>("token"));
             await Cliente_Ready();
             await ComandosBot();
 
@@ -71,6 +81,29 @@ namespace AmouxBot
         private async Task Cliente_Ready()
         {
             await _cliente.SetGameAsync("Jogo da vida", "https://www.google.com.br", ActivityType.Playing);
+        }
+
+        private static void ConfigureServices(IServiceCollection serviceCollection)
+        {
+            // Add logging
+            serviceCollection.AddSingleton(LoggerFactory.Create(builder =>
+            {
+                builder.AddSerilog(dispose: true);
+            }));
+
+            serviceCollection.AddLogging();
+
+            // Build configuration
+            configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
+                .AddJsonFile("appsettings.json", false)
+                .Build();
+
+            // Add access to generic IConfigurationRoot
+            serviceCollection.AddSingleton<IConfigurationRoot>(configuration);
+
+            // Add app
+            //serviceCollection.AddTransient<App>();
         }
 
         //{
