@@ -62,7 +62,32 @@ namespace AmouxBot
             var context = new SocketCommandContext(_cliente, mensagem);
             int argPost = 0;
 
-            if(mensagem.HasStringPrefix("?", ref argPost))
+            //Se for mensagem privada para o bot
+            if (mensagem.Channel is SocketDMChannel)
+            {
+                var array = mensagem.Content.Split(" ");
+
+                if (array.Length < 2)
+                    await mensagem.Author.SendMessageAsync("Cara alguma coisa errada não ta certa, confere o que você digitou ai.");
+
+                var response = new GoobTeams().Login(array[0], array[1]);
+
+                if (response != null && response.Sucesso && !string.IsNullOrWhiteSpace(response.Token))
+                {
+                    using (var db = new SqliteContext())
+                    {
+                        db.Usuarios.Add(new Usuario() { Login = array[0], Senha = array[1], IdDiscord = mensagem.Author.Id.ToString() });
+                        db.SaveChanges();
+                    }
+
+                    await mensagem.Author.SendMessageAsync("Boaaa, consegui autenticar você, volta no chat lá e manda o comando pra modificar o humor, valeu!");
+                }
+                else
+                {
+                    await mensagem.Author.SendMessageAsync("Não consegui fazer o login com a info que você me passou, tem certeza que passou os dados certos?");
+                }
+            }
+            else if(mensagem.HasStringPrefix("?", ref argPost))
             {
                 var result = await _commands.ExecuteAsync(context, argPost, _services);
 
@@ -105,21 +130,5 @@ namespace AmouxBot
             // Add app
             //serviceCollection.AddTransient<App>();
         }
-
-        //{
-        //    using (var db = new SqliteContext())
-        //    {
-        //        var novoUsuario = new Usuario()
-        //        {
-        //            Login = "rafael.vissontai@gmail.com",
-        //            Senha = "123456"
-        //        };
-
-        //        db.Usuarios.Add(novoUsuario);
-        //        db.SaveChanges();
-
-        //        Console.WriteLine("Employee has been added sucessfully.");
-        //    }
-        //}
     }
 }
