@@ -37,7 +37,7 @@ namespace AmouxBot
             _cliente.Ready += Cliente_Ready;
             _cliente.Log += Cliente_Log;
 
-            await _cliente.LoginAsync(TokenType.Bot, configuration.GetValue<string>("token"));
+            await _cliente.LoginAsync(TokenType.Bot, Util.Decrypt(configuration.GetValue<string>("token")));
             await Cliente_Ready();
             await ComandosBot();
 
