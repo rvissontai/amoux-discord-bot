@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "AmouxBot": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
