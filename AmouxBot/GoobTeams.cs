@@ -54,8 +54,9 @@ namespace AmouxBot
             return response;   
         }
 
-        public void MudarHumor(string login, string senha, Sentimento sentimento)
+        public MudarHumorResponse MudarHumor(string login, string senha, Sentimento sentimento)
         {
+            var retorno = new MudarHumorResponse() { Sucesso = true };
             var loginResponse = Login(login, senha);
 
             using (var db = new SqliteContext())
@@ -68,8 +69,14 @@ namespace AmouxBot
                 if (usuarioSentimento == null)
                     Adicionar(loginResponse, sentimento);
                 else
-                    Alterar(loginResponse, usuarioSentimento, sentimento);
+                {
+                    retorno.Sucesso = false;
+                    retorno.Mensagem = "Você já definiu seu humor hoje, por enquanto não sei como alterar :(";
+                    //Alterar(loginResponse, usuarioSentimento, sentimento);
+                }
             }
+
+            return retorno;
         }
 
         private void Adicionar(LoginResponse loginResponse, Sentimento sentimento)

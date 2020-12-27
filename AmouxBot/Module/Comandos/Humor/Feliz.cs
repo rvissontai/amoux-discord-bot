@@ -22,9 +22,12 @@ namespace AmouxBot.Module.Comandos.Humor
                 }
                 else
                 {
-                    new GoobTeams().MudarHumor(user.Login, user.Senha, Sentimento.Feliz);
+                    var response = new GoobTeams().MudarHumor(user.Login, user.Senha, Sentimento.Feliz);
 
-                    await ReplyAsync("Humor alterado para feliz!");
+                    if(response.Sucesso)
+                        await ReplyAsync("Humor alterado para feliz!");
+                    else
+                        await ReplyAsync(response.Mensagem);
                 }
             }
 

@@ -22,9 +22,12 @@ namespace AmouxBot.Module.Comandos.Humor
                 }
                 else
                 {
-                    new GoobTeams().MudarHumor(user.Login, user.Senha, Sentimento.Irritado);
+                    var response = new GoobTeams().MudarHumor(user.Login, user.Senha, Sentimento.Irritado);
 
-                    await ReplyAsync("Humor alterado para irrado =/ mano vai com calma ai véi, tudo nessa vida passa.");
+                    if (response.Sucesso)
+                        await ReplyAsync("Humor alterado para irrado =/ mano vai com calma ai véi, tudo nessa vida passa.");
+                    else
+                        await ReplyAsync(response.Mensagem);
                 }
             }
 
